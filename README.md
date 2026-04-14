@@ -19,7 +19,7 @@
 
 ## Quick Start
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/VaibhavXBhardwaj/adpulse>
 cd adpulse
 docker compose up
 ```
