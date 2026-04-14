@@ -1,4 +1,4 @@
-# AdPulse — Real-time E-commerce Intelligence Platform
+# AdPulse Real-time E-commerce Intelligence Platform
 
 > Monitor competitor prices, fire intelligent alerts, and track ad performance in real time.
 
