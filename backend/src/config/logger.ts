@@ -1,0 +1,19 @@
+import winston from 'winston';
+import { env } from './env';
+
+const { combine, timestamp, json, colorize, simple } = winston.format;
+
+export const logger = winston.createLogger({
+  level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    json()
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: env.NODE_ENV === 'production'
+        ? combine(timestamp(), json())
+        : combine(colorize(), simple()),
+    }),
+  ],
+});

@@ -1,5 +1,3 @@
-
-
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -40,10 +38,11 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
-      JWT_SECRET: ${JWT_SECRET}
-      PORT: ${PORT}
+      DATABASE_URL: postgresql://adpulse:adpulse_secret@postgres:5432/adpulse_db
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: supersecretjwtkey_changethisinprod
+      PORT: 4000
+      NODE_ENV: development
     ports:
       - "4000:4000"
     volumes:
