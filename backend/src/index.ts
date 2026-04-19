@@ -8,6 +8,7 @@ import { connectRedis, redisClient } from './config/redis';
 import { requestLogger } from './middleware/requestLogger';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
+import apiKeyRoutes from './routes/apikey.routes';
 
 
 const app = express();
@@ -56,6 +57,9 @@ app.get('/health', async (req, res) => {
 // Error handler — must be last
 app.use('/api/auth', authRoutes);
 app.use(errorHandler);
+
+app.use('/api/auth', authRoutes);
+app.use('/api/apikeys', apiKeyRoutes);
 
 // Start server
 const start = async (): Promise<void> => {
