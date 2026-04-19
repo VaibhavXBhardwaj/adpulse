@@ -7,6 +7,8 @@ import { prisma } from './config/db';
 import { connectRedis, redisClient } from './config/redis';
 import { requestLogger } from './middleware/requestLogger';
 import { errorHandler } from './middleware/errorHandler';
+import authRoutes from './routes/auth.routes';
+
 
 const app = express();
 
@@ -52,6 +54,7 @@ app.get('/health', async (req, res) => {
 });
 
 // Error handler — must be last
+app.use('/api/auth', authRoutes);
 app.use(errorHandler);
 
 // Start server
