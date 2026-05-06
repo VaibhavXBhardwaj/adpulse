@@ -9,32 +9,23 @@ import { requestLogger } from './middleware/requestLogger';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import apiKeyRoutes from './routes/apikey.routes';
-
+import productRoutes from './routes/product.routes';
 
 const app = express();
 
-// Security middleware
 app.use(helmet());
-
-// CORS — allow frontend to talk to backend
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
 }));
-
-// Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Request logging
 app.use(requestLogger);
 
-// Health check
 app.get('/health', async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     const redisPing = await redisClient.ping();
-
     res.json({
       status: 'ok',
       message: 'AdPulse backend is running',
@@ -54,19 +45,16 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Error handler — must be last
-app.use('/api/auth', authRoutes);
-app.use(errorHandler);
-
 app.use('/api/auth', authRoutes);
 app.use('/api/apikeys', apiKeyRoutes);
+app.use('/api/products', productRoutes);
 
-// Start server
+app.use(errorHandler);
+
 const start = async (): Promise<void> => {
   try {
     await connectRedis();
     logger.info('Redis connected');
-
     app.listen(env.PORT, () => {
       logger.info(`AdPulse backend running`, {
         port: env.PORT,
