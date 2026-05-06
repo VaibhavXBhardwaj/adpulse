@@ -6,28 +6,60 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=flat-square&logo=redis&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-5-2D3748?style=flat-square&logo=prisma&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
-> Monitor competitor prices, fire intelligent alerts, and track ad performance in real time.
-> Built with Node.js, PostgreSQL, Redis, BullMQ, Socket.io, and Next.js 14.
+> A production-grade SaaS platform for Amazon and Shopify sellers to monitor competitor
+> pricing in real time, fire intelligent alerts when conditions are met, and track ad
+> performance across their entire catalog — all from a single dashboard.
 
 ---
 
 ## What is AdPulse?
 
-AdPulse is a full stack SaaS platform where Amazon and Shopify sellers connect their store and the platform automatically monitors competitor pricing, tracks inventory signals, analyzes ad spend patterns, and fires intelligent alerts with recommended actions — all in real time.
+AdPulse mirrors the core product of funded startups like Atom11, Perpetua, and Sellics.
+Sellers connect their store and the platform automatically monitors competitor pricing,
+tracks inventory signals, analyzes ad spend patterns, and fires intelligent alerts with
+recommended actions in real time.
 
-It mirrors exactly what funded startups like Atom11, Perpetua, and Sellics build in production.
+This is not a tutorial project. It is built with the same architectural decisions and
+production patterns used in real B2B SaaS products.
 
 ---
 
-## Build Status
+## Live Demo
 
-| Day | Task | Status |
-|-----|------|--------|
-| Day 1 | Monorepo setup, TypeScript config, Express server, Next.js scaffold | Done |
-| Day 2 | Docker Compose — PostgreSQL 16 + pgvector, Redis 7, Nginx, Backend Dockerfile | Done |
-| Day 3 | Prisma setup + full DB schema | In progress |
+> Deployment in progress 
+
+---
+
+## Architecture
+<img width="1408" height="768" alt="Gemini_Generated_Image_9op1j39op1j39op1" src="https://github.com/user-attachments/assets/9f22e833-cc34-4b0b-81bd-2f55c00b8907" />
+
+
+## Build Progress
+
+ Task | Status |
+|------|--------|
+ Monorepo setup, TypeScript config, Express server, Next.js scaffold | ✓ Done |
+ Docker Compose — PostgreSQL 16 + pgvector, Redis 7, Nginx | ✓ Done |
+ Prisma setup, full DB schema, first migration | ✓ Done |
+ Express config, Redis client, Winston structured logging, error handler | ✓ Done |
+ JWT auth system — register, login, /me endpoint, bcrypt hashing | ✓ Done |
+ RBAC middleware — ADMIN, ANALYST, VIEWER role hierarchy | ✓ Done |
+ API key system with SHA256 hashing, Redis rate limiting | ✓ Done |
+ Tenant isolation middleware — all queries scoped to tenantId | ✓ Done |
+ Products service — create, list, get by ID, price history | In progress |
+ PricePoint service — time series data, competitor tracking | Upcoming |
+ BullMQ setup — price scraping job queue, hourly scheduler | Upcoming |
+ Mock price scraper worker | Upcoming |
+ Competitor price tracking service | Upcoming |
+ Integration tests — Jest + Supertest | Upcoming |
+ Alerts rules engine, Socket.io real time events | Upcoming |
+ Dashboard APIs, reporting, CSV export, Swagger docs | Upcoming |
+ Next.js frontend — dashboard, products, alerts, settings | Upcoming |
+ AWS EC2 deployment, Nginx SSL, GitHub Actions CI/CD | Upcoming |
+ Polish, tests, README, demo video | Upcoming |
 
 ---
 
@@ -38,12 +70,15 @@ It mirrors exactly what funded startups like Atom11, Perpetua, and Sellics build
 | Runtime | Node.js 20 + TypeScript 5 | Core backend runtime |
 | Framework | Express.js | REST API server |
 | Database | PostgreSQL 16 + pgvector | Primary data store + vector search |
-| ORM | Prisma | Type-safe DB queries |
+| ORM | Prisma 5 | Type-safe DB queries |
 | Cache | Redis 7 | Caching, pub/sub, rate limiting |
 | Queue | BullMQ | Background job processing |
 | WebSockets | Socket.io | Real time dashboard updates |
 | Auth | JWT + bcrypt | Authentication |
 | Access Control | RBAC middleware | Role-based route protection |
+| API Keys | SHA256 hashed keys | Programmatic API access |
+| Rate Limiting | Redis sliding window | Per API key request throttling |
+| Logging | Winston | Structured JSON logging |
 | Docs | Swagger / OpenAPI 3 | Auto-generated API docs |
 | Container | Docker + Docker Compose | Full stack containerization |
 | Cloud | AWS EC2 + S3 + SQS | Production deployment |
@@ -58,40 +93,99 @@ It mirrors exactly what funded startups like Atom11, Perpetua, and Sellics build
 
 ---
 
-## Architecture
-<img width="1408" height="768" alt="Gemini_Generated_Image_9op1j39op1j39op1" src="https://github.com/user-attachments/assets/664c315b-a82a-48d1-9610-f34569b8744a" />
+## Core Features
 
+**Multi-tenant architecture**
+Every user belongs to a Tenant (company). All data is scoped to the tenant at the
+middleware level. No developer can accidentally leak one customer's data to another.
 
+**JWT Authentication**
+Register creates a Tenant and Admin user in a single atomic Prisma transaction.
+Passwords hashed with bcrypt at cost factor 12. JWT tokens valid for 7 days.
 
+**Role Based Access Control**
+Three roles — ADMIN, ANALYST, VIEWER — with a hierarchy. ADMIN has full access.
+ANALYST can create alerts and export reports. VIEWER is read-only. Every route is
+protected by role at the middleware level.
 
-## Project Structure
-adpulse/
-├── backend/
-│   ├── src/
-│   │   ├── config/          # env, db, redis, logger
-│   │   ├── controllers/     # route handlers
-│   │   ├── middleware/      # auth, rbac, rate limiting
-│   │   ├── routes/          # express routers
-│   │   ├── services/        # business logic
-│   │   ├── jobs/            # BullMQ job processors
-│   │   ├── workers/         # background workers
-│   │   ├── websocket/       # socket.io handlers
-│   │   ├── utils/           # helpers, validators
-│   │   └── index.ts         # entry point
-│   ├── prisma/
-│   │   └── schema.prisma
-│   └── Dockerfile
-├── frontend/
-│   ├── app/                 # Next.js 14 app router
-│   ├── components/          # reusable UI components
-│   ├── hooks/               # custom React hooks
-│   ├── lib/                 # api client, utils
-│   └── store/               # Zustand state stores
-├── nginx/
-│   └── nginx.conf
-├── docker-compose.yml
-├── .env.example
-└── README.md
+**API Key System**
+Users can generate programmatic API keys. Raw key shown once at generation and never
+stored. Only the SHA256 hash is persisted in the database — the same pattern Stripe uses.
+
+**Redis Rate Limiting**
+Every API key request is counted in a Redis sliding window. Configurable per route.
+Returns X-RateLimit-Limit and X-RateLimit-Remaining headers on every response.
+
+**Structured Logging**
+Winston logger outputs JSON in production and colorized readable logs in development.
+Every HTTP request is logged with method, path, status code, response time, and IP.
+
+**Real time Alerts** *(coming Day 15)*
+Custom rule builder — define conditions like "price drops below threshold". BullMQ
+worker evaluates rules every 15 minutes. Alerts fire via Socket.io WebSocket events,
+email, webhook, or Slack.
+
+**Background Jobs** *(coming Day 11)*
+BullMQ with Redis persistence. Jobs survive server restarts. Dead letter queue,
+retry logic, concurrency control, and job progress tracking built in.
+
+--- 
+
+## Database Schema
+Tenant          — company account, root of all data
+User            — belongs to Tenant, has Role (ADMIN/ANALYST/VIEWER)
+Product         — tracked ASIN, belongs to Tenant
+PricePoint      — price snapshot, source (own/competitor), timestamp
+Alert           — rule definition (condition JSON), belongs to Tenant + Product
+Notification    — fired alert record, read/unread status
+ApiKey          — SHA256 hashed key, belongs to User
+
+---
+
+## API Reference
+
+### Auth
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | /api/auth/register | Create account + tenant | Public |
+| POST | /api/auth/login | Get JWT token | Public |
+| GET | /api/auth/me | Current user info | JWT |
+
+### Products
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | /api/products | List products (tenant scoped) | JWT |
+| POST | /api/products | Track new product | JWT + ADMIN |
+| GET | /api/products/:id | Product detail | JWT |
+| GET | /api/products/:id/prices | Price history | JWT |
+| GET | /api/products/:id/competitors | Competitor prices | JWT |
+
+### Alerts
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | /api/alerts | List alert rules | JWT |
+| POST | /api/alerts | Create alert rule | JWT + ANALYST |
+| DELETE | /api/alerts/:id | Delete alert | JWT + ADMIN |
+
+### Dashboard
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | /api/dashboard/summary | KPI cards data | JWT |
+| GET | /api/dashboard/timeseries | Chart data | JWT |
+
+### API Keys
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | /api/apikeys | Generate API key | JWT + ADMIN |
+| GET | /api/apikeys | List API keys | JWT + ADMIN |
+| DELETE | /api/apikeys/:id | Revoke API key | JWT + ADMIN |
+
+---
 
 ## Quick Start
 
@@ -113,56 +207,69 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Backend health check:
-http://localhost:4000/health
+Backend: `http://localhost:4000/health`
 
-### Run frontend separately
-
+Frontend:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Frontend runs at `http://localhost:3000`
+Frontend: `http://localhost:3000`
 
 ---
 
 ## Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `POSTGRES_USER` | PostgreSQL username | `adpulse` |
-| `POSTGRES_PASSWORD` | PostgreSQL password | `your_secret` |
-| `POSTGRES_DB` | Database name | `adpulse_db` |
-| `DATABASE_URL` | Full Prisma connection string | `postgresql://...` |
-| `REDIS_URL` | Redis connection URL | `redis://redis:6379` |
-| `JWT_SECRET` | Secret for signing JWT tokens | `your_jwt_secret` |
-| `PORT` | Backend server port | `4000` |
-| `NEXT_PUBLIC_API_URL` | Frontend API base URL | `http://localhost:4000` |
-| `NEXT_PUBLIC_WS_URL` | WebSocket URL | `ws://localhost:4000` |
+| Variable | Description |
+|----------|-------------|
+| `POSTGRES_USER` | PostgreSQL username |
+| `POSTGRES_PASSWORD` | PostgreSQL password |
+| `POSTGRES_DB` | Database name |
+| `DATABASE_URL` | Full Prisma connection string |
+| `REDIS_URL` | Redis connection URL |
+| `JWT_SECRET` | Secret for signing JWT tokens |
+| `PORT` | Backend server port |
+| `NEXT_PUBLIC_API_URL` | Frontend API base URL |
+| `NEXT_PUBLIC_WS_URL` | WebSocket URL |
 
 ---
 
 ## API Documentation
 
-Once the backend is running:
+Swagger UI available after Day 27 at:
 http://localhost:4000/api-docs
 
-Swagger UI will be available after Day 27.
+---
 
-## Roadmap
+## Common Questions
 
-- [x] Monorepo setup + TypeScript config
-- [x] Docker Compose — PostgreSQL, Redis, Nginx
-- [ ] Prisma schema + migrations
-- [ ] Auth system — JWT + bcrypt + RBAC
-- [ ] Products + price tracking service
-- [ ] BullMQ background jobs
-- [ ] Alert rules engine
-- [ ] Socket.io real time events
-- [ ] Next.js dashboard UI
-- [ ] AWS EC2 deployment + GitHub Actions CI/CD
+**Why multi-tenant and not per-user isolation?**
+Multi-tenancy is how real B2B SaaS products work. A tenant is a company. Multiple users
+belong to one tenant. All data is isolated at the tenantId level enforced by middleware,
+not by application code. This means no developer can write a query that accidentally
+leaks data across tenants.
+
+**How does the rules engine work?**
+Alert conditions are stored as JSON in PostgreSQL. A BullMQ worker runs every 15 minutes,
+fetches all active alerts, queries the latest price for each product, and evaluates the
+condition. If true, it fires the alert, creates a notification record, and emits a
+WebSocket event to the tenant's Socket.io room.
+
+**Why BullMQ over setInterval?**
+BullMQ persists jobs in Redis so they survive server restarts. It supports retry logic,
+dead letter queues, concurrency control, and job progress tracking. setInterval is
+not reliable in production.
+
+**Why pgvector?**
+Added to support future semantic search on product titles and descriptions. Shows
+the product roadmap was considered from day one, not just the current features.
+
+**How are API keys stored?**
+Raw keys are shown once at generation and immediately discarded. Only the SHA256 hash
+is persisted in the database. On every request the incoming key is hashed and compared
+to stored hashes. This is the same pattern Stripe uses.
 
 ---
 
