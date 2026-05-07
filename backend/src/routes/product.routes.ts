@@ -1,30 +1,25 @@
-import { Router, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
-import { injectTenant, TenantRequest } from '../middleware/tenant';
+import { requireRole } from '../middleware/rbac';
+import { injectTenant } from '../middleware/tenant';
+import {
+  create,
+  list,
+  getById,
+  getPriceHistory,
+  getCompetitors,
+  remove,
+} from '../controllers/product.controller';
 
 const router = Router();
 
-// All product routes require auth + tenant injection
 router.use(authenticate, injectTenant);
 
-// GET /api/products — returns only this tenant's products
-router.get('/', async (req: TenantRequest, res: Response, next: NextFunction) => {
-  try {
-    const products = await req.tenant!.products.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-
-    res.json({
-      status: 'success',
-      data: products,
-      meta: {
-        tenantId: req.tenantId,
-        count: products.length,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/', list);
+router.post('/', requireRole('ADMIN'), create);
+router.get('/:id', getById);
+router.get('/:id/prices', getPriceHistory);
+router.get('/:id/competitors', getCompetitors);
+router.delete('/:id', requireRole('ADMIN'), remove);
 
 export default router;
