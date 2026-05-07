@@ -13,7 +13,6 @@ interface CreateProductInput {
 export const createProduct = async (input: CreateProductInput) => {
   const { asin, tenantId } = input;
 
-  // Check if product already tracked by this tenant
   const existing = await prisma.product.findUnique({
     where: { asin_tenantId: { asin, tenantId } },
   });
@@ -106,7 +105,6 @@ export const getProductPriceHistory = async (
 ) => {
   const { source, days = 30 } = options;
 
-  // Verify product belongs to tenant
   const product = await prisma.product.findFirst({
     where: { id: productId, tenantId },
   });
@@ -142,7 +140,6 @@ export const getCompetitorPrices = async (
     throw new AppError('Product not found', 404);
   }
 
-  // Get latest price per source
   const latestPrices = await prisma.$queryRaw`
     SELECT DISTINCT ON (source) source, price, "recordedAt"
     FROM "PricePoint"

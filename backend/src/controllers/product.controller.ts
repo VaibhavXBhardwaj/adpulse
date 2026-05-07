@@ -70,7 +70,10 @@ export const getById = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const product = await getProductById(req.params.id as string, req.tenantId!);
+    const product = await getProductById(
+      req.params.id as string,
+      req.tenantId!
+    );
     res.json({ status: 'success', data: product });
   } catch (error) {
     next(error);
@@ -104,7 +107,10 @@ export const getCompetitors = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const result = await getCompetitorPrices(req.params.id as string, req.tenantId!);
+    const result = await getCompetitorPrices(
+      req.params.id as string,
+      req.tenantId!
+    );
     res.json({ status: 'success', data: result });
   } catch (error) {
     next(error);
@@ -117,7 +123,10 @@ export const remove = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const result = await deleteProduct(req.params.id as string, req.tenantId!);
+    const result = await deleteProduct(
+      req.params.id as string,
+      req.tenantId!
+    );
     res.json({ status: 'success', data: result });
   } catch (error) {
     next(error);
