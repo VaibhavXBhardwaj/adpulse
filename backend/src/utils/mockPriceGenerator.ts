@@ -33,7 +33,7 @@ export const generateMockPrices = async (
     recordedAt: Date;
   }[] = [];
 
-  const totalIntervals = (days * 24) / intervalHours;
+  const totalIntervals = Math.floor((days * 24) / intervalHours);
   const now = new Date();
 
   for (let i = totalIntervals; i >= 0; i--) {
