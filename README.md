@@ -271,8 +271,7 @@ Raw keys are shown once at generation and immediately discarded. Only the SHA256
 is persisted in the database. On every request the incoming key is hashed and compared
 to stored hashes. This is the same pattern Stripe uses.
 
-(Currently in Production)
-
+(currently in production)
 ## License
 
 MIT © Vaibhav Bhardwaj
